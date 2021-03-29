@@ -1,25 +1,35 @@
-import logo from './logo.svg';
-import './App.css';
+import './App.scss'
+
+import Header from './components/header/header'
+import Main from './components/main/main'
+
+import { QueryClient, QueryClientProvider } from 'react-query'
+import { ReactQueryDevtools } from 'react-query/devtools'
+import PostDetail from './components/post-detail/post-detail';
+import { useState } from 'react'
+
+const queryClient = new QueryClient()
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const [showPost, setShowPost] = useState(false)
+    const [selectedPost, setSelectedPost] = useState({})
+    const displayPostDetail = ( post ) => {
+        setShowPost(true)
+        setSelectedPost(post)
+        console.log('why is click funcion in App js running?')
+        console.log( { postInApp: post } )
+    }
+
+    return (
+        <div className='App'>
+            <Header />
+            <QueryClientProvider client={queryClient}>
+                <Main handlePostClick={displayPostDetail} />
+                { showPost ? <PostDetail post={selectedPost}/> : null }
+               <ReactQueryDevtools initialIsOpen={false} />
+            </QueryClientProvider>
+        </div>
+    )
 }
 
-export default App;
+export default App
