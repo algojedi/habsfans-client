@@ -1,19 +1,17 @@
 import axios from 'axios'
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
 import { registerUrl, signInUrl } from '../../api'
 import { btn, textField } from '../../styles'
 import './header.scss'
 
 const saveTokenInSession = (token) => {
-    window.localStorage.setItem('token', "Bearer " + token)
+    window.localStorage.setItem('token', 'Bearer ' + token)
 }
 
-export default function Header() {
+export default function Header({ setMessage, saveUser, user }) {
     const [username, setUserName] = useState('')
     const [password, setPassword] = useState('')
-   const ref = useRef(0)
-    ref.current++
-    console.log({ref: ref.current})
+
     const handleSignIn = (e) => {
         e.preventDefault()
         axios
@@ -21,21 +19,25 @@ export default function Header() {
                 username,
                 password
             })
-            .then(data =>  { 
-                console.log(data)
-                if (data) { 
-                    saveTokenInSession(data.data.jwt) } 
-                else { console.log("oops, something went wrong")} 
-            }).catch(err =>  {
-                if (err && err.message) {
-                    console.log("printing err && err.message if block")
-                    console.log({err}) // err.response.data is the error message
-                console.log(err.message)
-                } 
-                else console.log("no error message?")
-             })
-
+            .then((data) => {
+                if (data) {
+                    console.log({ data })
+                    saveTokenInSession(data.data.jwt)
+                    saveUser(data.data.username)
+                    setMessage('') // reset error message
+                } else {
+                    console.log('oops, something went wrong')
+                }
+            })
+            .catch((err) => {
+                // ! handle sign in failure
+                console.log('printing err && err.message if block')
+                console.log({ err })
+                // error message buried in response object
+                setMessage(err.response.data.message)
+            })
     }
+
     const handleRegister = (e) => {
         e.preventDefault()
         axios
@@ -44,10 +46,12 @@ export default function Header() {
                 password,
                 email: 'chloe@chloe.com'
             })
-            .then(console.log)
+            .then(() => setMessage('Registration Successful'))
     }
+
     return (
         <div className='header'>
+            {user && <section className='text-bold'>Hello {user} </section>}
             <form className='form'>
                 <input
                     type='text'
@@ -67,7 +71,9 @@ export default function Header() {
                     className={textField}
                     placeholder='password'
                 />
-                <button className={btn} type="submit" onClick={handleSignIn}>Sign in</button>
+                <button className={btn} type='submit' onClick={handleSignIn}>
+                    Sign in
+                </button>
             </form>
             <form className='form'>
                 <input
@@ -88,7 +94,9 @@ export default function Header() {
                     className={textField}
                     placeholder='password'
                 />
-                <button className={btn} onClick={handleRegister}>Register</button>
+                <button className={btn} onClick={handleRegister}>
+                    Register
+                </button>
             </form>
         </div>
     )
